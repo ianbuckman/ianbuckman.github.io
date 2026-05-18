@@ -21,6 +21,7 @@
     --grid: #1a1f1c;
   }
   * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
   html, body { margin: 0; padding: 0; }
   body {
     background: var(--bg);
@@ -56,7 +57,6 @@
   .win-bar .dots i:nth-child(3) { background: #27c93f; }
   .win-bar .path { flex: 1; text-align: center; font-size: 12px; }
   .win-bar .status { color: var(--green); }
-  .cmd-k { position: absolute; top: 14px; right: 18px; font-size: 10px; color: var(--mute); border: 1px solid #1b211d; padding: 3px 8px; border-radius: 4px; }
 
   .pane { display: grid; grid-template-columns: 220px 1fr 260px; min-height: 680px; }
 
@@ -89,12 +89,20 @@
   .kv dd { margin: 0; }
   .hr { height: 1px; background: #1b211d; margin: 18px 0; }
 
-  .card-list { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 10px; }
+  .card-list { display: grid; grid-template-columns: 1fr; gap: 14px; margin-top: 10px; }
   .card {
-    border: 1px solid #1b211d; background: #0e1211; padding: 14px; border-radius: 6px;
-    cursor: pointer; transition: border-color 0.2s, transform 0.2s;
+    display: grid; grid-template-columns: 210px 1fr;
+    border: 1px solid #1b211d; background: #0e1211; border-radius: 6px;
+    overflow: hidden; cursor: pointer;
+    transition: border-color 0.2s, transform 0.2s;
   }
   .card:hover { border-color: var(--green); transform: translateY(-2px); }
+  .card .shot {
+    width: 100%; height: 100%; min-height: 132px;
+    object-fit: cover; display: block;
+    background: #0b0d0c; border-right: 1px solid #1b211d;
+  }
+  .card .body { padding: 14px; }
   .card .tag { display: inline-block; font-size: 10px; color: var(--amber); margin-bottom: 8px; letter-spacing: 0.06em; }
   .card h4 { margin: 0 0 6px; font-size: 14px; color: var(--ink); font-weight: 500; }
   .card p { margin: 0; font-size: 11px; color: var(--mute); line-height: 1.55; }
@@ -136,7 +144,8 @@
     .side a.on { border-bottom-color: var(--green); border-left-color: transparent; }
     .group-label { padding: 6px 10px; width: 100%; }
     .aside { border-left: 0; border-top: 1px solid #1b211d; }
-    .card-list { grid-template-columns: 1fr; }
+    .card { grid-template-columns: 1fr; }
+    .card .shot { min-height: 150px; border-right: 0; border-bottom: 1px solid #1b211d; }
     .main { padding: 20px; }
     h1.ascii { font-size: 8px; }
     #halo { display: none; }
@@ -150,24 +159,18 @@
 <div class="win">
   <div class="win-bar">
     <div class="dots"><i></i><i></i><i></i></div>
-    <div class="path">~/buckdancer.top — zsh — 132×42</div>
+    <div class="path">~/ianbuckman.github.io — zsh — 132×42</div>
     <div class="status">● connected</div>
   </div>
-  <div class="cmd-k">⌘ K</div>
   <div class="pane">
     <nav class="side">
       <div class="group-label">// navigate</div>
-      <a class="on" data-sec="about"><span>~ about</span><span class="kbd">a</span></a>
-      <a data-sec="work"><span>~ work</span><span class="kbd">w</span></a>
-      <a data-sec="writing"><span>~ writing</span><span class="kbd">b</span></a>
-      <a data-sec="now"><span>~ now</span><span class="kbd">n</span></a>
+      <a class="on" data-sec="about" href="#about"><span>~ about</span><span class="kbd">a</span></a>
+      <a data-sec="work" href="#work"><span>~ work</span><span class="kbd">w</span></a>
+      <a data-sec="writing" href="#writing"><span>~ writing</span><span class="kbd">b</span></a>
+      <a data-sec="now" href="#now"><span>~ now</span><span class="kbd">n</span></a>
       <div class="group-label" style="margin-top:14px">// elsewhere</div>
       <a href="https://github.com/ianbuckman" target="_blank" rel="noopener"><span>→ github</span><span class="kbd">↗</span></a>
-      <a href="/feed.xml"><span>→ rss</span><span class="kbd">↗</span></a>
-      <a href="mailto:hello@buckdancer.top"><span>→ email</span><span class="kbd">↗</span></a>
-      <div class="group-label" style="margin-top:14px">// meta</div>
-      <a><span>uptime 842d</span><span class="kbd"></span></a>
-      <a><span>build 2026.04</span><span class="kbd"></span></a>
     </nav>
 
     <div class="main">
@@ -179,7 +182,41 @@
  |____/ \___/ \____|_|\_\|____/_/   \_\_| \_|\____|_____|_| \_\
       </h1>
 
-      <div style="margin-top:18px">
+      <div id="work" class="prompt" style="margin-top:18px">ls ~/github.com/ianbuckman/</div>
+      <div class="out mute">// featured repos — <a href="https://github.com/ianbuckman" target="_blank" rel="noopener" style="color:var(--green)">see all on github ↗</a></div>
+      <div class="card-list">
+        <a class="card" href="https://github.com/ianbuckman/ai_podcast" target="_blank" rel="noopener" style="text-decoration:none;color:inherit">
+          <img class="shot" src="images/ai_podcast.png" alt="ai_podcast 截图" loading="lazy" />
+          <div class="body">
+            <div class="tag">▸ live · python</div>
+            <h4>ai_podcast/</h4>
+            <p>在 Claude Code 里用自然语言管理 AI/科技播客订阅 —— 自动发现新集、分析字幕、提炼洞察并推送到 Notion。</p>
+            <div class="meta-line"><span>python · claude code · notion</span><span class="star">★ 5</span></div>
+          </div>
+        </a>
+        <a class="card" href="https://github.com/ianbuckman/ai_ppt" target="_blank" rel="noopener" style="text-decoration:none;color:inherit">
+          <img class="shot" src="images/ai_ppt.png" alt="ai_ppt 截图" loading="lazy" />
+          <div class="body">
+            <div class="tag">▸ live · skill</div>
+            <h4>ai_ppt/</h4>
+            <p>一个 Claude Code Skill,把文章/文档一键转成专业演示文稿 —— 12 套视觉风格、15 种幻灯片版式,输出可直接打开的 Reveal.js HTML。</p>
+            <div class="meta-line"><span>reveal.js · html · python</span><span class="star">★ 0</span></div>
+          </div>
+        </a>
+        <a class="card" href="https://github.com/ianbuckman/my-whisper-17" target="_blank" rel="noopener" style="text-decoration:none;color:inherit">
+          <img class="shot" src="images/my-whisper-17.png" alt="my-whisper-17 截图" loading="lazy" />
+          <div class="body">
+            <div class="tag">▸ live · macos</div>
+            <h4>my-whisper-17/</h4>
+            <p>macOS 本地实时语音转文字,基于 MLX Whisper 在 Apple Silicon 上高效运行,数据全程本地处理。</p>
+            <div class="meta-line"><span>swift · mlx · whisper</span><span class="star">★ 1</span></div>
+          </div>
+        </a>
+      </div>
+
+      <div class="hr"></div>
+
+      <div id="about">
         <div class="prompt">whoami</div>
         <div class="out">buck dancer — software engineer based in Shenzhen.</div>
         <div class="out">coding for ~10 years, now doing AI agent EVALS.</div>
@@ -193,46 +230,22 @@
         <dt>location</dt><dd>shenzhen, cn</dd>
         <dt>languages</dt><dd>python, typescript, swift, 中文, english</dd>
         <dt>github</dt><dd><a href="https://github.com/ianbuckman" target="_blank" rel="noopener" style="color:var(--green);text-decoration:none">@ianbuckman</a></dd>
-        <dt>mailbox</dt><dd>hello@buckdancer.top</dd>
+        <dt>mailbox</dt><dd style="color:var(--mute)">to be added</dd>
       </dl>
 
       <div class="hr"></div>
 
-      <div class="prompt">ls ~/github.com/ianbuckman/</div>
-      <div class="out mute">// featured repos — <a href="https://github.com/ianbuckman" target="_blank" rel="noopener" style="color:var(--green)">see all on github ↗</a></div>
-      <div class="card-list">
-        <a class="card" href="https://github.com/ianbuckman/ai_podcast" target="_blank" rel="noopener" style="text-decoration:none;color:inherit;display:block">
-          <div class="tag">▸ live · python</div>
-          <h4>ai_podcast/</h4>
-          <p>在 Claude Code 里用自然语言管理 AI/科技播客订阅。自动发现新集、分析字幕、提炼洞察,推送到 Notion。</p>
-          <div class="meta-line"><span>python · claude code · notion</span><span class="star">★ 5</span></div>
-        </a>
-        <a class="card" href="https://github.com/ianbuckman/my-whisper-17" target="_blank" rel="noopener" style="text-decoration:none;color:inherit;display:block">
-          <div class="tag">▸ live · macos</div>
-          <h4>my-whisper-17/</h4>
-          <p>macOS 本地实时语音转文字。基于 MLX Whisper 在 Apple Silicon 上高效运行,数据全程本地处理。</p>
-          <div class="meta-line"><span>swift · mlx · whisper</span><span class="star">★ 1</span></div>
-        </a>
-      </div>
-
-      <div class="hr"></div>
-
-      <div class="prompt">tail -n 6 ~/writing.log</div>
+      <div id="writing" class="prompt">tail -n 1 ~/writing.log</div>
       <div class="out mute">// latest posts — en &amp; zh</div>
       <div style="margin-top:10px">
-        <div class="post-row"><span class="d">2026-04-12</span><span>the engineer who would not prompt.</span><span class="rt">12 min</span></div>
-        <div class="post-row"><span class="d">2026-03-28</span><span>从写代码到写说明书 · re‑narrating work</span><span class="rt">8 min</span></div>
-        <div class="post-row"><span class="d">2026-03-02</span><span>evals as a design medium</span><span class="rt">6 min</span></div>
-        <div class="post-row"><span class="d">2026-02-17</span><span>a week with a coding agent on my lap</span><span class="rt">9 min</span></div>
-        <div class="post-row"><span class="d">2026-01-30</span><span>小模型笔记 · #3 qwen2 on a mac mini</span><span class="rt">11 min</span></div>
-        <div class="post-row"><span class="d">2026-01-09</span><span>taste, in an age of infinite drafts</span><span class="rt">7 min</span></div>
+        <div class="out" style="color:var(--mute)">to be added</div>
       </div>
 
       <div style="margin-top:20px" class="prompt cursor">_</div>
     </div>
 
     <aside class="aside">
-      <div class="block">
+      <div class="block" id="now">
         <h5>// now · 近况</h5>
         <div class="now-item">running Native cohort 02</div>
         <div class="now-item">reading <i>Notes on the Synthesis of Form</i></div>
@@ -240,25 +253,8 @@
         <div class="now-item">drinking more 凤凰单丛</div>
       </div>
       <div class="block">
-        <h5>// stats · 2026 ytd</h5>
-        <div class="stat"><span>posts</span><b>14</b></div>
-        <div class="bar"><i style="width:62%"></i></div>
-        <div class="stat"><span>commits</span><b>612</b></div>
-        <div class="bar"><i style="width:78%"></i></div>
-        <div class="stat"><span>evals written</span><b>203</b></div>
-        <div class="bar"><i style="width:40%"></i></div>
-      </div>
-      <div class="block">
-        <h5>// uptime</h5>
-        <div style="font-size:11px;color:var(--ink)">
-          00 01 02 03 04 05 06 07<br/>
-          <span style="color:var(--green)">■ ■ ■ ■ ■ ■ ■</span><span style="color:var(--amber)"> ◩</span>
-        </div>
-        <div style="margin-top:8px">842 days since launch, 0 outages, 3 redesigns.</div>
-      </div>
-      <div class="block">
         <h5>// contact</h5>
-        <div style="color:var(--ink)">hello@buckdancer.top</div>
+        <div style="color:var(--mute)">email · to be added</div>
         <div><a href="https://github.com/ianbuckman" target="_blank" rel="noopener" style="color:var(--mute);text-decoration:none">@ianbuckman · github ↗</a></div>
         <div>shenzhen · utc+8</div>
       </div>
