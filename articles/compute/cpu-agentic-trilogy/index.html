@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>cpu-agentic-trilogy · compute · articles · buckdancer.top</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b0d0c;
+      --fg: #cfe8d3;
+      --accent: #7ee08a;
+      --cyan: #7fd3e0;
+      --amber: #e0c27e;
+      --muted: #4a5a4a;
+      --border: #1a1f1a;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--fg);
+      font-family: 'JetBrains Mono', 'SF Mono', Menlo, monospace;
+      font-size: 14px;
+      line-height: 1.7;
+      background-image:
+        linear-gradient(rgba(126, 224, 138, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(126, 224, 138, 0.03) 1px, transparent 1px);
+      background-size: 24px 24px;
+      min-height: 100vh;
+    }
+    .breadcrumb {
+      background: #0b0d0c;
+      color: var(--accent);
+      padding: 10px 20px;
+      font-size: 13px;
+      border-bottom: 1px solid var(--border);
+    }
+    .breadcrumb a { color: var(--accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb .sep { color: var(--muted); }
+    .breadcrumb .here { color: var(--amber); }
+    .container { max-width: 880px; margin: 0 auto; padding: 48px 24px 80px; }
+    h1 { color: var(--accent); font-size: 24px; font-weight: 700; margin-bottom: 8px; }
+    .series-tag { color: var(--amber); font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; }
+    .intro { color: var(--cyan); margin-bottom: 40px; font-size: 14px; line-height: 1.8; }
+    .episodes { list-style: none; counter-reset: ep; }
+    .episode {
+      padding: 18px 24px;
+      margin-bottom: 12px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: rgba(126, 224, 138, 0.02);
+      transition: border-color 0.15s;
+      position: relative;
+    }
+    .episode.pending { opacity: 0.45; }
+    .episode:hover { border-color: var(--accent); }
+    .episode a { text-decoration: none; display: block; color: var(--fg); }
+    .episode-num {
+      color: var(--amber);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      margin-bottom: 6px;
+    }
+    .episode-title {
+      color: var(--cyan);
+      font-weight: 500;
+      font-size: 16px;
+      margin-bottom: 6px;
+    }
+    .episode a:hover .episode-title { color: var(--accent); }
+    .episode-desc { color: var(--fg); opacity: 0.7; font-size: 13px; }
+    .episode-meta { color: var(--muted); font-size: 12px; margin-top: 8px; }
+    .footer { margin-top: 64px; padding-top: 24px; border-top: 1px solid var(--border); color: var(--muted); font-size: 12px; text-align: center; }
+    .footer a { color: var(--muted); margin: 0 8px; }
+  </style>
+</head>
+<body>
+
+<div class="breadcrumb">
+  <a href="/">~</a>
+  <span class="sep"> / </span>
+  <a href="/articles/">articles</a>
+  <span class="sep"> / </span>
+  <a href="/articles/compute/">compute</a>
+  <span class="sep"> / </span>
+  <span class="here">cpu-agentic-trilogy</span>
+</div>
+
+<div class="container">
+  <div class="series-tag">series · compute</div>
+  <h1>CPU Agentic Trilogy</h1>
+  <p class="intro">// Spring 2026: Intel +116%, AMD +124% in five weeks. The market called it "a changing of the guard in AI." Three episodes dig into why agent workloads put 88% of cycles on the CPU, what the x86-vs-Arm fight actually is, and where the upside lands.</p>
+
+  <ol class="episodes">
+    <li class="episode">
+      <a href="/articles/compute/cpu-agentic-trilogy/ep01-agent-88pct-cpu/">
+        <div class="episode-num">EP.01</div>
+        <div class="episode-title">Agentic AI 让 CPU 翻红，但 Intel 和 AMD 未必是赢家</div>
+        <div class="episode-desc">"AI = GPU" 的叙事被一句 "CPU:GPU 走向 1:1" 改写。拆解 CPU 为什么重新变重要，以及这波红利最后会落进谁的口袋。</div>
+        <div class="episode-meta">2026-05-25</div>
+      </a>
+    </li>
+    <li class="episode pending">
+      <div class="episode-num">EP.02 · COMING SOON</div>
+      <div class="episode-title">x86 vs Arm：商业模式的最后一战</div>
+      <div class="episode-desc">不是性能之战，是商业模式之战。为什么 hyperscaler 都在做自家 Arm CPU，而 Intel/AMD 还活得下去。</div>
+    </li>
+    <li class="episode pending">
+      <div class="episode-num">EP.03 · COMING SOON</div>
+      <div class="episode-title">三家同涨，但只有一个是真正的赢家</div>
+      <div class="episode-desc">Intel、AMD、Arm 都涨了，但价值流向并不均匀。复盘 5-6 周行情背后真正的胜者。</div>
+    </li>
+  </ol>
+
+  <div class="footer">
+    <a href="/articles/compute/">← compute</a>
+    <a href="/articles/">all articles</a>
+  </div>
+</div>
+
+</body>
+</html>

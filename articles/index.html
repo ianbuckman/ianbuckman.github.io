@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>articles · buckdancer.top</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b0d0c;
+      --fg: #cfe8d3;
+      --accent: #7ee08a;
+      --cyan: #7fd3e0;
+      --amber: #e0c27e;
+      --muted: #4a5a4a;
+      --border: #1a1f1a;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--fg);
+      font-family: 'JetBrains Mono', 'SF Mono', Menlo, monospace;
+      font-size: 14px;
+      line-height: 1.7;
+      background-image:
+        linear-gradient(rgba(126, 224, 138, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(126, 224, 138, 0.03) 1px, transparent 1px);
+      background-size: 24px 24px;
+      min-height: 100vh;
+    }
+    .breadcrumb {
+      background: #0b0d0c;
+      color: var(--accent);
+      padding: 10px 20px;
+      font-size: 13px;
+      border-bottom: 1px solid var(--border);
+    }
+    .breadcrumb a { color: var(--accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb .sep { color: var(--muted); }
+    .breadcrumb .here { color: var(--amber); }
+    .container { max-width: 880px; margin: 0 auto; padding: 48px 24px 80px; }
+    h1 { color: var(--accent); font-size: 24px; font-weight: 700; margin-bottom: 8px; }
+    .intro { color: var(--cyan); margin-bottom: 40px; font-size: 14px; }
+    .layer {
+      margin-bottom: 36px;
+      padding: 20px 24px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: rgba(126, 224, 138, 0.02);
+    }
+    .layer.empty { opacity: 0.4; }
+    .layer h2 {
+      color: var(--accent);
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+    }
+    .layer h2 a { color: var(--accent); text-decoration: none; }
+    .layer h2 a:hover { text-decoration: underline; }
+    .layer-count { color: var(--muted); font-size: 12px; font-weight: 400; }
+    .layer-desc { color: var(--fg); opacity: 0.7; font-size: 13px; margin-bottom: 16px; }
+    .layer-entries { list-style: none; }
+    .layer-entries li { padding: 6px 0; border-bottom: 1px dashed var(--border); }
+    .layer-entries li:last-child { border-bottom: none; }
+    .layer-entries a { color: var(--cyan); text-decoration: none; display: block; }
+    .layer-entries a:hover { color: var(--accent); }
+    .entry-title { color: var(--cyan); }
+    .entry-meta { color: var(--muted); font-size: 12px; margin-left: 8px; }
+    .footer { margin-top: 64px; padding-top: 24px; border-top: 1px solid var(--border); color: var(--muted); font-size: 12px; text-align: center; }
+    .footer a { color: var(--muted); }
+  </style>
+</head>
+<body>
+
+<div class="breadcrumb">
+  <a href="/">~</a>
+  <span class="sep"> / </span>
+  <span class="here">articles</span>
+</div>
+
+<div class="container">
+  <h1>articles</h1>
+  <p class="intro">// long-form analysis on the semiconductor stack, organized by layer.</p>
+
+  <div class="layer">
+    <h2><a href="/articles/compute/">compute</a> <span class="layer-count">1 article</span></h2>
+    <p class="layer-desc">CPU, GPU, accelerators — where the silicon does the math.</p>
+    <ul class="layer-entries">
+      <li><a href="/articles/compute/cpu-agentic-trilogy/"><span class="entry-title">cpu-agentic-trilogy</span><span class="entry-meta">series · 1 / 3 published</span></a></li>
+    </ul>
+  </div>
+
+  <div class="layer empty">
+    <h2>memory <span class="layer-count">0 articles</span></h2>
+    <p class="layer-desc">HBM, DRAM bandwidth — the constant bottleneck.</p>
+  </div>
+
+  <div class="layer empty">
+    <h2>storage <span class="layer-count">0 articles</span></h2>
+    <p class="layer-desc">SSD, NAND, hyperscaler storage TCO.</p>
+  </div>
+
+  <div class="layer empty">
+    <h2>foundry <span class="layer-count">0 articles</span></h2>
+    <p class="layer-desc">TSMC, Samsung, Intel Foundry, lithography.</p>
+  </div>
+
+  <div class="layer empty">
+    <h2>networking <span class="layer-count">0 articles</span></h2>
+    <p class="layer-desc">Switching ASIC, optics, NVLink, scale-out fabric.</p>
+  </div>
+
+  <div class="layer empty">
+    <h2>power <span class="layer-count">0 articles</span></h2>
+    <p class="layer-desc">Datacenter power, cooling, grid constraints.</p>
+  </div>
+
+  <div class="layer empty">
+    <h2>china-stack <span class="layer-count">0 articles</span></h2>
+    <p class="layer-desc">Chinese counterparts to the US semi stack — horizontal layer, crosses everything.</p>
+  </div>
+
+  <div class="footer">
+    <a href="/">← back to buckdancer.top</a>
+  </div>
+</div>
+
+</body>
+</html>

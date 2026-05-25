@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agentic AI 让 CPU 翻红，但 Intel 和 AMD 未必是赢家 · 精简版</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+
+<style>
+/* ================================================================
+   ARTICLE · Light editorial layout with dark chart insets
+   (Lite edition — technical chapters compressed)
+   ================================================================ */
+
+:root {
+  --bg:          #fafaf7;
+  --paper:       #ffffff;
+  --ink:         #1a1a1a;
+  --ink-soft:    #3a3a3a;
+  --ink-muted:   #6b6b6b;
+  --rule:        #e6e3dc;
+  --link:        #0071C5;
+  --highlight:   rgba(118,185,0,0.22);
+  --code-bg:     #f3f1ec;
+  --table-stripe:#f7f5f0;
+  --quote:       #4a4a4a;
+
+  --d: 'Space Grotesk', 'Noto Sans SC', system-ui, sans-serif;
+  --b: 'Inter', 'Noto Sans SC', system-ui, sans-serif;
+  --m: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+}
+
+.chart-canvas, .chart-canvas-wrap {
+  --bg:        #0a0e1a;
+  --bg-1:      #0f1422;
+  --bg-2:      #161b2c;
+  --surface:   #1a2030;
+
+  --ink:       #f5f0e8;
+  --ink-soft:  #d6d1c7;
+  --ink-mid:   #a5a09a;
+  --ink-muted: #6c6862;
+
+  --rule:      rgba(245, 240, 232, 0.12);
+  --rule-soft: rgba(245, 240, 232, 0.06);
+
+  --gpu:       #76B900;
+  --gpu-glow:  rgba(118, 185, 0, 0.32);
+  --cpu:       #4FC3F7;
+  --cpu-deep:  #1E88E5;
+  --cpu-io:    #7E57C2;
+  --wait:      #5d6478;
+
+  --accent:    #FFB300;
+  --accent-glow: rgba(255, 179, 0, 0.28);
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--b);
+  font-size: 17px;
+  line-height: 1.78;
+  letter-spacing: 0.005em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+article {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 72px 28px 96px;
+}
+
+.masthead {
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 16px;
+  margin-bottom: 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-family: var(--m);
+  font-size: 12px;
+  color: var(--ink-muted);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.masthead .brand {
+  font-family: var(--d);
+  font-weight: 600;
+  font-size: 14px;
+  text-transform: none;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+}
+.masthead .brand::before {
+  content: '';
+  width: 8px; height: 8px;
+  background: #FFB300;
+  border-radius: 50%;
+  display: inline-block;
+}
+.masthead .edition {
+  display: inline-block;
+  padding: 2px 8px;
+  background: #FFB300;
+  color: #1a1a1a;
+  border-radius: 3px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  font-size: 10.5px;
+}
+
+h1.title {
+  font-family: var(--d);
+  font-size: 40px;
+  line-height: 1.18;
+  font-weight: 700;
+  letter-spacing: -0.018em;
+  margin: 0 0 14px;
+  color: var(--ink);
+}
+h1.title em {
+  font-style: normal;
+  color: #FFB300;
+  font-weight: 700;
+}
+.subtitle {
+  font-size: 16.5px;
+  color: var(--ink-muted);
+  margin: 0 0 40px;
+  line-height: 1.62;
+  max-width: 62ch;
+}
+
+h2 {
+  font-family: var(--d);
+  font-size: 27px;
+  line-height: 1.32;
+  font-weight: 700;
+  margin: 64px 0 18px;
+  padding-top: 28px;
+  border-top: 1px solid var(--rule);
+  letter-spacing: -0.005em;
+  color: var(--ink);
+}
+h3 {
+  font-family: var(--d);
+  font-size: 19px;
+  font-weight: 600;
+  margin: 38px 0 12px;
+  color: var(--ink);
+  letter-spacing: -0.003em;
+}
+
+p { margin: 0 0 1.1em; color: var(--ink-soft); }
+p strong, li strong { color: var(--ink); font-weight: 600; }
+a { color: var(--link); text-decoration: none; border-bottom: 1px solid transparent; }
+a:hover { border-bottom-color: var(--link); }
+
+ul, ol { padding-left: 1.3em; margin: 0 0 1.2em; }
+li { margin-bottom: 0.45em; color: var(--ink-soft); }
+li::marker { color: var(--ink-muted); }
+
+em {
+  font-style: normal;
+  background: linear-gradient(180deg, transparent 60%, var(--highlight) 60%);
+  padding: 0 1px;
+}
+
+blockquote {
+  margin: 18px 0 24px;
+  padding: 4px 0 4px 18px;
+  border-left: 3px solid #76B900;
+  color: var(--quote);
+  font-size: 15.5px;
+  line-height: 1.7;
+}
+blockquote p { margin: 0; }
+
+hr {
+  border: none;
+  border-top: 1px solid var(--rule);
+  margin: 56px auto;
+  width: 80px;
+}
+
+.toc {
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-left: 4px solid #FFB300;
+  padding: 18px 22px;
+  margin: 28px 0 36px;
+  border-radius: 4px;
+}
+.toc-title {
+  font-family: var(--m);
+  font-size: 11.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--ink-muted);
+  margin-bottom: 10px;
+}
+.toc ol { padding-left: 1.2em; margin: 0; }
+.toc li { color: var(--ink-soft); font-size: 15.5px; margin-bottom: 4px; }
+
+.preview-card {
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  padding: 22px 24px;
+  margin: 20px 0;
+}
+.preview-card .label {
+  display: inline-block;
+  font-family: var(--m);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #0071C5;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.preview-card h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-size: 17.5px;
+}
+.preview-card p { font-size: 14.8px; line-height: 1.7; margin-bottom: 0; }
+
+.table-wrap {
+  margin: 24px 0 32px;
+  overflow-x: auto;
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14.5px;
+  line-height: 1.55;
+}
+thead th {
+  background: var(--table-stripe);
+  text-align: left;
+  padding: 12px 14px;
+  font-weight: 600;
+  color: var(--ink);
+  border-bottom: 1px solid var(--rule);
+  font-family: var(--m);
+  font-size: 12.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+tbody td {
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--rule);
+  color: var(--ink-soft);
+  vertical-align: top;
+}
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:nth-child(even) td { background: var(--table-stripe); }
+
+code {
+  font-family: var(--m);
+  font-size: 13.5px;
+  background: var(--code-bg);
+  padding: 1px 6px;
+  border-radius: 3px;
+  color: var(--ink);
+}
+
+/* ================================================================
+   CHART FIGURE — dark inset card
+   ================================================================ */
+.chart-fig {
+  margin: 36px 0;
+}
+
+.chart-canvas-wrap {
+  background: linear-gradient(180deg, var(--bg-1), var(--bg-2));
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  padding: 22px 22px 18px;
+  position: relative;
+  overflow: hidden;
+}
+.chart-canvas-wrap::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  height: 2px;
+  width: 40%;
+  background: linear-gradient(90deg, var(--accent), transparent);
+  border-radius: 8px 8px 0 0;
+}
+
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--rule);
+}
+.chart-header .fig-no {
+  font-family: var(--m);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+  font-weight: 600;
+}
+.chart-header .fig-title {
+  font-family: var(--d);
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--ink-soft);
+  text-align: right;
+  max-width: 60%;
+}
+
+.chart-canvas-wrap svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+.chart-canvas-wrap svg text {
+  font-family: var(--m);
+  font-size: 12px;
+}
+
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--rule);
+  font-family: var(--m);
+  font-size: 12px;
+  color: var(--ink-mid);
+  letter-spacing: 0.04em;
+}
+.chart-legend .item { display: inline-flex; align-items: center; gap: 0.5em; }
+.chart-legend .sw {
+  width: 14px; height: 4px;
+  border-radius: 2px;
+  display: inline-block;
+}
+
+.chart-cap {
+  margin-top: 10px;
+  font-family: var(--m);
+  font-size: 11.5px;
+  color: var(--ink-muted);
+  letter-spacing: 0.05em;
+  text-align: center;
+  line-height: 1.5;
+}
+.chart-cap strong { color: var(--ink-soft); font-weight: 500; }
+
+.mermaid-wrap {
+  margin: 32px 0;
+  padding: 24px 12px;
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  overflow-x: auto;
+}
+.mermaid { display: flex; justify-content: center; }
+
+.footer-note {
+  font-size: 13.5px;
+  color: var(--ink-muted);
+  line-height: 1.7;
+}
+.footer-note ul { padding-left: 1.2em; }
+.footer-note li { margin-bottom: 0.4em; color: var(--ink-muted); }
+
+/* ================================================================
+   ANIMATIONS
+   ================================================================ */
+.chart-fig .bar-grow {
+  transform-origin: left center;
+  transform: scaleX(0);
+  transition: transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.chart-fig.in-view .bar-grow { transform: scaleX(1); }
+.chart-fig.in-view .bar-grow.d1 { transition-delay: 0.15s; }
+.chart-fig.in-view .bar-grow.d2 { transition-delay: 0.30s; }
+.chart-fig.in-view .bar-grow.d3 { transition-delay: 0.45s; }
+.chart-fig.in-view .bar-grow.d4 { transition-delay: 0.60s; }
+
+.chart-fig .bar-vert {
+  transform-origin: center bottom;
+  transform: scaleY(0);
+  transition: transform 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.chart-fig.in-view .bar-vert { transform: scaleY(1); }
+.chart-fig.in-view .bar-vert.d1 { transition-delay: 0.15s; }
+.chart-fig.in-view .bar-vert.d2 { transition-delay: 0.28s; }
+.chart-fig.in-view .bar-vert.d3 { transition-delay: 0.40s; }
+.chart-fig.in-view .bar-vert.d4 { transition-delay: 0.52s; }
+.chart-fig.in-view .bar-vert.d5 { transition-delay: 0.64s; }
+.chart-fig.in-view .bar-vert.d6 { transition-delay: 0.76s; }
+
+.chart-fig .fade-in {
+  opacity: 0;
+  transition: opacity 0.8s ease;
+}
+.chart-fig.in-view .fade-in { opacity: 1; }
+.chart-fig.in-view .fade-in.d1 { transition-delay: 0.4s; }
+.chart-fig.in-view .fade-in.d2 { transition-delay: 0.6s; }
+.chart-fig.in-view .fade-in.d3 { transition-delay: 0.8s; }
+
+@media (max-width: 600px) {
+  article { padding: 40px 18px 64px; }
+  h1.title { font-size: 30px; }
+  h2 { font-size: 22px; margin-top: 48px; }
+  h3 { font-size: 17px; }
+  body { font-size: 16px; line-height: 1.75; }
+  .chart-canvas-wrap { padding: 14px; }
+  .chart-header { flex-direction: column; gap: 4px; }
+  .chart-header .fig-title { text-align: left; max-width: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: 0.01ms !important; }
+  .chart-fig .bar-grow, .chart-fig .bar-vert { transform: none; }
+  .chart-fig .fade-in { opacity: 1; }
+}
+</style>
+</head>
+<body>
+
+<div style="background:#0b0d0c;color:#7ee08a;font-family:'JetBrains Mono','SF Mono',Menlo,monospace;padding:10px 20px;font-size:13px;border-bottom:1px solid #1a1f1a;line-height:1.6">
+  <a href="https://buckdancer.top/" style="color:#7ee08a;text-decoration:none">~</a>
+  <span style="color:#4a5a4a"> / </span>
+  <a href="/articles/" style="color:#7ee08a;text-decoration:none">articles</a>
+  <span style="color:#4a5a4a"> / </span>
+  <a href="/articles/compute/" style="color:#7ee08a;text-decoration:none">compute</a>
+  <span style="color:#4a5a4a"> / </span>
+  <a href="/articles/compute/cpu-agentic-trilogy/" style="color:#7ee08a;text-decoration:none">cpu-agentic-trilogy</a>
+  <span style="color:#4a5a4a"> / </span>
+  <span style="color:#e0c27e">ep01-agent-88pct-cpu</span>
+</div>
+
+<article>
+
+  <div class="masthead">
+    <span class="brand">17 号野生分析师</span>
+    <span><span class="edition">LITE</span> &nbsp; EP.01 · 2026·05</span>
+  </div>
+
+  <h1 class="title">Agentic AI 让 <em>CPU</em> 翻红，但 Intel 和 AMD 未必是赢家</h1>
+  <p class="subtitle">过去三年「AI = GPU」的叙事，正在被一句「CPU:GPU 走向 1:1」改写。这篇拆解：CPU 为什么重新变重要，以及这波红利最后会落进谁的口袋。</p>
+
+  <h2>CPU 为什么又火了</h2>
+
+  <p>过去三年，整个 AI 算力的故事都是关于 GPU 的。英伟达从 1 万亿美金市值翻到 4 万亿，台积电的 CoWoS 产能成了全球科技公司的硬通货。</p>
+
+  <p>但 2026 年 4 月底到 5 月初的 5-6 周里，做 CPU 的 <strong>Intel 累计涨了 116%，AMD 涨了 124%</strong>——同期 NVIDIA 相对平淡。CNBC 把这一轮市场动作写成「Wall Street sees 'changing of the guard in AI'」。</p>
+
+  <p>起点是 4 月 23 日 Intel Q1 财报电话会议。CEO Lip-Bu Tan 说了一句话——「未来数据中心里 CPU 和 GPU 的比例，会从今天的 1:8 走到 1:4，最终走向 parity（1:1）甚至 CPU 反超 GPU」。市场把这句话当成了一个分水岭。</p>
+
+  <p>为什么这个时候 CPU 重新成了话题？答案藏在一个被大部分人忽视的数字里：<strong>在一个完整的 agent 工作流里，GPU 真正在算的时间只占大约 12%</strong>——剩下近 <strong>88% 的时间都不在 GPU 上</strong>，而是花在任务编排、工具调用，以及「会话挂在 CPU 上、等网络和 LLM 返回」上。而且更反直觉的是——<strong>GPU 推理越快，它在端到端延迟里的占比就越低，agent 的瓶颈反而越往 CPU 这一侧挪</strong>。</p>
+
+  <div class="toc">
+    <div class="toc-title">这篇文章想讲清楚三件事</div>
+    <ol>
+      <li>为什么 Agentic AI 让瓶颈从 GPU 移向 CPU——以及"88%"这个数字从哪来</li>
+      <li>并发场景下，CPU 才是数据中心真正的扩展瓶颈</li>
+      <li>CPU 品类在涨，但增量价值为什么不流向 Intel 和 AMD</li>
+    </ol>
+  </div>
+
+  <hr>
+
+  <h2>一、Agent 工作流里，CPU 才是大头</h2>
+
+  <p>AI 的使用方式在 2025 年发生了一次范式切换：从「单次推理」（输一句话、回一段话）切换到「agent 工作流」（给一个高层目标，模型自己规划、调工具、读文档、再推理、再调工具）。一个 agent 任务往往涉及 10-30 轮 LLM 调用 + 几十次工具调用。<strong>前者是 GPU 的舒适区，后者是 CPU 的舒适区</strong>——因为后者本质上是「连续的状态管理 + 大量 I/O」。</p>
+
+  <h3>你以为 agent 在等 GPU，其实在等 CPU</h3>
+
+  <p>大多数人默认「AI = GPU」，所以会觉得 agent 慢是卡在等 GPU 算。但真相相反：一次 agent 任务的时间，大部分根本不花在 GPU 上。考虑一个简化模型：5 轮 LLM 推理 + 5 轮工具调用。agent 编排这一侧的工作（解析 JSON、HTTP 往返、PDF 解析、向量库读写，外加等网络和 LLM 返回）<strong>不会因为 GPU 变快而变快</strong>——它就在那里，恒定约 30 秒。但 GPU 单轮推理在持续提速：H100 时代 4 秒，Blackwell 时代 2 秒，Rubin 时代约 0.8 秒。</p>
+
+  <p>结果就是这条单调上升的曲线：</p>
+
+  <!-- ============ FIG 01 · Monotonic Rise ============ -->
+  <figure class="chart-fig" data-fig="01">
+    <div class="chart-canvas-wrap">
+      <div class="chart-header">
+        <span class="fig-no">FIG. 01</span>
+        <span class="fig-title">GPU 单轮 4s → 2s → 0.8s，GPU 占比 40% → 25% → 12%</span>
+      </div>
+      <svg viewBox="0 0 900 380" preserveAspectRatio="xMidYMid meet">
+        <g class="axis">
+          <text x="40" y="50" text-anchor="end" style="font-size:11px;fill:var(--ink-muted)">100%</text>
+          <text x="40" y="130" text-anchor="end" style="font-size:11px;fill:var(--ink-muted)">75%</text>
+          <text x="40" y="210" text-anchor="end" style="font-size:11px;fill:var(--ink-muted)">50%</text>
+          <text x="40" y="290" text-anchor="end" style="font-size:11px;fill:var(--ink-muted)">25%</text>
+          <text x="40" y="320" text-anchor="end" style="font-size:11px;fill:var(--ink-muted)">0%</text>
+        </g>
+
+        <g>
+          <line x1="50" y1="45" x2="880" y2="45" stroke="rgba(245,240,232,0.06)"/>
+          <line x1="50" y1="125" x2="880" y2="125" stroke="rgba(245,240,232,0.06)"/>
+          <line x1="50" y1="205" x2="880" y2="205" stroke="rgba(245,240,232,0.06)"/>
+          <line x1="50" y1="285" x2="880" y2="285" stroke="rgba(245,240,232,0.06)"/>
+          <line x1="50" y1="315" x2="880" y2="315" stroke="rgba(245,240,232,0.18)"/>
+        </g>
+
+        <g transform="translate(160, 45)">
+          <rect class="bar-vert d1" x="0" y="0" width="130" height="162" fill="#4FC3F7" rx="2"/>
+          <rect class="bar-vert d1" x="0" y="162" width="130" height="108" fill="#76B900" rx="2"/>
+          <text x="65" y="92" text-anchor="middle" style="fill:#0a0e1a;font-family:var(--d);font-weight:700;font-size:24px">60%</text>
+          <text x="65" y="220" text-anchor="middle" style="fill:#0a0e1a;font-family:var(--d);font-weight:700;font-size:20px">40%</text>
+          <text x="65" y="295" text-anchor="middle" style="fill:var(--ink);font-family:var(--d);font-weight:600;font-size:17px">H100</text>
+          <text x="65" y="316" text-anchor="middle" style="fill:var(--ink-muted);font-family:var(--m);font-size:11px">2023 · 单轮 4s</text>
+        </g>
+
+        <g transform="translate(385, 45)">
+          <rect class="bar-vert d2" x="0" y="0" width="130" height="202" fill="#4FC3F7" rx="2"/>
+          <rect class="bar-vert d2" x="0" y="202" width="130" height="68" fill="#76B900" rx="2"/>
+          <text x="65" y="112" text-anchor="middle" style="fill:#0a0e1a;font-family:var(--d);font-weight:700;font-size:26px">75%</text>
+          <text x="65" y="240" text-anchor="middle" style="fill:#0a0e1a;font-family:var(--d);font-weight:700;font-size:18px">25%</text>
+          <text x="65" y="295" text-anchor="middle" style="fill:var(--ink);font-family:var(--d);font-weight:600;font-size:17px">Blackwell</text>
+          <text x="65" y="316" text-anchor="middle" style="fill:var(--ink-muted);font-family:var(--m);font-size:11px">2025 · 单轮 2s</text>
+        </g>
+
+        <g transform="translate(610, 45)">
+          <rect class="bar-vert d3" x="0" y="0" width="130" height="238" fill="#4FC3F7" rx="2"/>
+          <rect class="bar-vert d3" x="0" y="238" width="130" height="32" fill="#76B900" rx="2"/>
+          <text x="65" y="130" text-anchor="middle" style="fill:#0a0e1a;font-family:var(--d);font-weight:700;font-size:30px">88%</text>
+          <text x="65" y="259" text-anchor="middle" style="fill:#0a0e1a;font-family:var(--d);font-weight:700;font-size:13px">12%</text>
+          <text x="65" y="295" text-anchor="middle" style="fill:var(--ink);font-family:var(--d);font-weight:600;font-size:17px">Rubin</text>
+          <text x="65" y="316" text-anchor="middle" style="fill:var(--ink-muted);font-family:var(--m);font-size:11px">2027 · 单轮 0.8s · 估算</text>
+        </g>
+
+        <g class="fade-in d3">
+          <path d="M225,125 Q400,90 675,55" fill="none" stroke="#FFB300" stroke-width="2" stroke-dasharray="4 4"/>
+          <polygon points="675,55 668,60 672,49" fill="#FFB300"/>
+          <text x="450" y="80" text-anchor="middle" style="fill:#FFB300;font-family:var(--m);font-size:12px;letter-spacing:0.08em">瓶颈持续移向 CPU →</text>
+        </g>
+      </svg>
+      <div class="chart-legend">
+        <span class="item"><span class="sw" style="background:#4FC3F7"></span>非 GPU 时间（编排+工具+等待）</span>
+        <span class="item"><span class="sw" style="background:#76B900"></span>GPU 推理</span>
+        <span class="item" style="color:#FFB300"><span class="sw" style="background:#FFB300"></span>非 GPU 部分 ≈ 30s 恒定</span>
+      </div>
+    </div>
+    <p class="chart-cap">假设：5 轮 LLM + 5 轮工具调用；非 GPU 部分（编排+工具+等待）恒为 30s，GPU 单轮 4s→2s→0.8s</p>
+  </figure>
+
+  <p><strong>这就是「GPU 只占一成」这个数字的来源</strong>。但有一点要先说清楚：上图那根蓝柱不是「CPU 在埋头算 88%」，而是「88% 的时间不花在 GPU 上」——它既包含 CPU 真正在计算的部分，也包含大量「会话挂在 CPU 上、等网络和 LLM 返回」的时间（下一张图会把这 88% 拆开）。真正值得注意的不是占比此消彼长这件算术——而是：<strong>GPU 每提速一代，它能改善的那部分时间都在缩水</strong>，因为它解决的从来就不是 agent 的主要瓶颈。摩尔定律式的 GPU 进步，反而把瓶颈越推越向 CPU 这一侧。</p>
+
+  <h3>那 CPU 在 agent 里到底在做什么？</h3>
+
+  <p>具体到一个真实任务（比如「帮我研究 NVIDIA 上季度财报」），总耗时约 95 秒——分布是这样的：</p>
+
+  <!-- ============ FIG 02 · 95s Breakdown ============ -->
+  <figure class="chart-fig" data-fig="02">
+    <div class="chart-canvas-wrap">
+      <div class="chart-header">
+        <span class="fig-no">FIG. 02</span>
+        <span class="fig-title">95 秒里，GPU 真正在算的时间只有 13%</span>
+      </div>
+      <svg viewBox="0 0 900 360" preserveAspectRatio="xMidYMid meet">
+        <text x="50" y="38" style="fill:var(--ink);font-family:var(--d);font-weight:600;font-size:16px">单任务 95 秒 · 时间分布</text>
+        <text x="870" y="38" text-anchor="end" style="fill:var(--ink-mid);font-family:var(--m);font-size:12px">100% = 95s</text>
+
+        <g>
+          <rect class="bar-grow d1" x="50" y="60" width="103.58" height="64" fill="#76B900"/>
+          <rect class="bar-grow d1" x="153.58" y="60" width="155.37" height="64" fill="#4FC3F7"/>
+          <rect class="bar-grow d1" x="308.95" y="60" width="69.05" height="64" fill="#7E57C2"/>
+          <rect class="bar-grow d1" x="378" y="60" width="491.95" height="64" fill="#5d6478" fill-opacity="0.55"/>
+        </g>
+
+        <g class="fade-in d1">
+          <text x="101.79" y="98" text-anchor="middle" style="fill:#0a0e1a;font-family:var(--d);font-weight:700;font-size:14px">12s</text>
+          <text x="231.27" y="98" text-anchor="middle" style="fill:#0a0e1a;font-family:var(--d);font-weight:700;font-size:14px">18s</text>
+          <text x="343.48" y="98" text-anchor="middle" style="fill:var(--ink);font-family:var(--d);font-weight:700;font-size:13px">8s</text>
+          <text x="624" y="98" text-anchor="middle" style="fill:var(--ink);font-family:var(--d);font-weight:700;font-size:14px">57s — 网络往返 + LLM 排队</text>
+        </g>
+
+        <g class="fade-in d2">
+          <rect x="50" y="160" width="200" height="160" fill="rgba(118,185,0,0.08)" stroke="rgba(118,185,0,0.4)" stroke-width="1" rx="3"/>
+          <text x="65" y="184" style="fill:#76B900;font-family:var(--d);font-weight:700;font-size:13px">GPU 推理</text>
+          <text x="235" y="184" text-anchor="end" style="fill:#76B900;font-family:var(--d);font-weight:700;font-size:24px">13%</text>
+          <text x="65" y="218" style="fill:var(--ink);font-family:var(--d);font-weight:700;font-size:20px">12 秒</text>
+          <text x="65" y="248" style="fill:var(--ink-mid);font-family:var(--m);font-size:11px">5 次 LLM forward pass</text>
+          <text x="65" y="265" style="fill:var(--ink-mid);font-family:var(--m);font-size:11px">真正的"算力消费"部分</text>
+          <text x="65" y="300" style="fill:var(--ink-muted);font-family:var(--m);font-size:10px;letter-spacing:0.05em">→ 唯一不可替代 GPU 的环节</text>
+
+          <rect x="270" y="160" width="200" height="160" fill="rgba(79,195,247,0.1)" stroke="rgba(79,195,247,0.4)" stroke-width="1" rx="3"/>
+          <text x="285" y="184" style="fill:#4FC3F7;font-family:var(--d);font-weight:700;font-size:13px">CPU 主动计算</text>
+          <text x="455" y="184" text-anchor="end" style="fill:#4FC3F7;font-family:var(--d);font-weight:700;font-size:24px">19%</text>
+          <text x="285" y="218" style="fill:var(--ink);font-family:var(--d);font-weight:700;font-size:20px">18 秒</text>
+          <text x="285" y="248" style="fill:var(--ink-mid);font-family:var(--m);font-size:11px">PDF 解析(8s 单步!)</text>
+          <text x="285" y="265" style="fill:var(--ink-mid);font-family:var(--m);font-size:11px">JSON · 向量库 · 检索</text>
+          <text x="285" y="300" style="fill:var(--ink-muted);font-family:var(--m);font-size:10px;letter-spacing:0.05em">→ 必须 CPU, GPU 帮不上</text>
+
+          <rect x="490" y="160" width="180" height="160" fill="rgba(126,87,194,0.1)" stroke="rgba(126,87,194,0.4)" stroke-width="1" rx="3"/>
+          <text x="505" y="184" style="fill:#7E57C2;font-family:var(--d);font-weight:700;font-size:13px">本地 I/O</text>
+          <text x="655" y="184" text-anchor="end" style="fill:#7E57C2;font-family:var(--d);font-weight:700;font-size:24px">8%</text>
+          <text x="505" y="218" style="fill:var(--ink);font-family:var(--d);font-weight:700;font-size:20px">8 秒</text>
+          <text x="505" y="248" style="fill:var(--ink-mid);font-family:var(--m);font-size:11px">磁盘 / 临时文件</text>
+          <text x="505" y="265" style="fill:var(--ink-mid);font-family:var(--m);font-size:11px">本地缓存读写</text>
+
+          <rect x="690" y="160" width="180" height="160" fill="rgba(93,100,120,0.15)" stroke="rgba(93,100,120,0.5)" stroke-width="1" rx="3"/>
+          <text x="705" y="184" style="fill:var(--ink-soft);font-family:var(--d);font-weight:700;font-size:13px">网络 + 排队</text>
+          <text x="855" y="184" text-anchor="end" style="fill:var(--ink);font-family:var(--d);font-weight:700;font-size:24px">60%</text>
+          <text x="705" y="218" style="fill:var(--ink);font-family:var(--d);font-weight:700;font-size:20px">57 秒</text>
+          <text x="705" y="248" style="fill:var(--ink-mid);font-family:var(--m);font-size:11px">HTTP socket 等待</text>
+          <text x="705" y="265" style="fill:var(--ink-mid);font-family:var(--m);font-size:11px">LLM API 排队</text>
+          <text x="705" y="300" style="fill:var(--ink-muted);font-family:var(--m);font-size:10px;letter-spacing:0.05em">→ CPU 持有会话状态</text>
+        </g>
+      </svg>
+    </div>
+    <p class="chart-cap">PDF 解析单步 8 秒，比 GPU 整个任务总和（12 秒）的三分之二还多</p>
+  </figure>
+
+  <p>注意一个细节：<strong>PDF 解析单步就吃掉 8 秒，比 GPU 整个任务的三分之二还多</strong>。这种「看起来不智能但巨耗算力」的工作——HTML 解析、JSON 序列化、向量库查询、状态对象的复制——在 agent 工作流里到处都是。每一项都不大，但加起来就是 agent 整体性能的瓶颈。而且<strong>它们都跑在 CPU 上，且必须跑在 CPU 上</strong>。</p>
+
+  <p>那占了 60% 的「网络 + 排队」呢？单看一个任务，它确实只是 CPU 在干等，谈不上什么价值。但<strong>恰恰是这段「大部分时间在等」的特性，才是下一章的伏笔</strong>——正因为每个会话大半时间都在等，一台 CPU 才能同时托管成千上万个会话。单任务视角里的「浪费」，到了并发视角就成了 CPU 的红利来源。</p>
+
+  <hr>
+
+  <h2>二、并发：CPU 真正的扩展维度</h2>
+
+  <p>到这里只解释了「单个 agent 任务里 CPU 的占比」。但真正决定数据中心 CPU 需求的不是单任务，是<strong>并发</strong>。</p>
+
+  <p>考虑一家 SaaS 公司给 1000 个企业客户提供 AI agent 服务，每个客户随时可能发起一个 agent 任务，每个任务持续 1-3 分钟、且大部分时间在等。用 GPU 来「管理」这 1000 个会话——做不到。GPU 只能一次跑一批同质化的任务，托管不了「几千个会话各做各的、大部分时间在等」这种场景。这是它的设计取向，不是缺陷。</p>
+
+  <p>CPU 完全相反。它天生就是为「同时托管海量会话」设计的——一台 192 核服务器可以同时挂着几千到上万个会话，自动让「正在等数据」的会话先歇着、把「数据刚到」的叫醒接着干。<strong>Gmail、Stripe、Shopify 同时服务几千万用户，靠的就是这套机制</strong>。而 agent 编排，本质上就是同一类负载——只是过去它叫「后端服务」，现在换了个名字。</p>
+
+  <h3>CPU 按「并发」扩展，GPU 按「吞吐」扩展</h3>
+
+  <p>这是理解 AI 时代算力分工的最核心一句话。</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>维度</th>
+          <th style="color:#0071C5">CPU</th>
+          <th style="color:#5B8C00">GPU</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>扩展单位</td><td>并发会话数</td><td>tokens/sec 吞吐</td></tr>
+        <tr><td>适合负载</td><td>I/O 密集、大部分时间在等、状态持久</td><td>算得越多越值、一批同质任务</td></tr>
+        <tr><td>同时托管的 agent 会话</td><td>5000-10000 量级（单台 192 核，工程估算）</td><td>个位数（且必须批量推理）</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p><strong>这两件事互补，不竞争</strong>。理想的数据中心不是「GPU 替代 CPU」，而是「CPU 服务器托管几万个 agent 会话，每个会话在需要推理时把请求送到附近的 GPU 服务器」。</p>
+
+  <p>这就解释了一个之前看起来奇怪的现象：<strong>为什么过去两年市场上突然冒出 128 核 Bergamo、192 核 Turin Dense、288 核 Sierra Forest、96 核 Graviton 4 这种"核数怪兽"</strong>？它们的设计目标根本不是「让单线程跑得更快」，而是<strong>「让单台服务器塞进尽可能多的并发会话」</strong>。在 agent 工作流到来之前，这种设计的市场需求其实有限——主要是 web hosting 和数据库；agent 工作流出现之后，这种 CPU 突然变成了刚需。</p>
+
+  <p>这就是 Lip-Bu Tan 说"CPU:GPU 比例从 1:8 走向 1:1"的真实含义——<strong>不是说每张 GPU 旁边要配一颗 CPU，而是说数据中心里"专门用于 agent 编排的 CPU 服务器"会作为新的独立类目快速增长</strong>。Bank of America 预计数据中心 CPU 的 TAM 从 2025 年的 270 亿美金增长到 2030 年的 600 亿美金（翻倍以上），主要增量就来自这一层。</p>
+
+  <!-- ============ FIG 03 · TAM Growth ============ -->
+  <figure class="chart-fig" data-fig="03">
+    <div class="chart-canvas-wrap">
+      <div class="chart-header">
+        <span class="fig-no">FIG. 03</span>
+        <span class="fig-title">数据中心 CPU TAM：$27B → $60B · 5 年翻倍</span>
+      </div>
+      <svg viewBox="0 0 900 360" preserveAspectRatio="xMidYMid meet">
+        <g class="axis">
+          <text x="60" y="55" text-anchor="end" style="font-size:11px;fill:var(--ink-muted)">$60B</text>
+          <text x="60" y="115" text-anchor="end" style="font-size:11px;fill:var(--ink-muted)">$50B</text>
+          <text x="60" y="175" text-anchor="end" style="font-size:11px;fill:var(--ink-muted)">$40B</text>
+          <text x="60" y="235" text-anchor="end" style="font-size:11px;fill:var(--ink-muted)">$30B</text>
+          <text x="60" y="295" text-anchor="end" style="font-size:11px;fill:var(--ink-muted)">$20B</text>
+          <text x="60" y="315" text-anchor="end" style="font-size:11px;fill:var(--ink-muted)">0</text>
+        </g>
+        <g>
+          <line x1="70" y1="50" x2="880" y2="50" stroke="rgba(245,240,232,0.06)"/>
+          <line x1="70" y1="110" x2="880" y2="110" stroke="rgba(245,240,232,0.06)"/>
+          <line x1="70" y1="170" x2="880" y2="170" stroke="rgba(245,240,232,0.06)"/>
+          <line x1="70" y1="230" x2="880" y2="230" stroke="rgba(245,240,232,0.06)"/>
+          <line x1="70" y1="290" x2="880" y2="290" stroke="rgba(245,240,232,0.06)"/>
+          <line x1="70" y1="310" x2="880" y2="310" stroke="rgba(245,240,232,0.18)"/>
+        </g>
+
+        <rect class="bar-vert d1" x="110" y="202" width="90" height="108" fill="#1E88E5" rx="2"/>
+        <text x="155" y="195" text-anchor="middle" style="fill:#4FC3F7;font-family:var(--d);font-weight:700;font-size:14px">$27B</text>
+        <text x="155" y="332" text-anchor="middle" style="fill:var(--ink-mid);font-family:var(--m);font-size:11px">2025</text>
+        <text x="155" y="348" text-anchor="middle" style="fill:#FFB300;font-family:var(--m);font-size:9.5px;letter-spacing:0.06em">锚点</text>
+
+        <rect class="bar-vert d2" x="240" y="183.2" width="90" height="126.8" fill="#4FC3F7" fill-opacity="0.85" rx="2"/>
+        <text x="285" y="176" text-anchor="middle" style="fill:#4FC3F7;font-family:var(--d);font-weight:600;font-size:13px">$31.7</text>
+        <text x="285" y="332" text-anchor="middle" style="fill:var(--ink-mid);font-family:var(--m);font-size:11px">2026</text>
+
+        <rect class="bar-vert d3" x="370" y="161.2" width="90" height="148.8" fill="#4FC3F7" fill-opacity="0.85" rx="2"/>
+        <text x="415" y="154" text-anchor="middle" style="fill:#4FC3F7;font-family:var(--d);font-weight:600;font-size:13px">$37.2</text>
+        <text x="415" y="332" text-anchor="middle" style="fill:var(--ink-mid);font-family:var(--m);font-size:11px">2027</text>
+
+        <rect class="bar-vert d4" x="500" y="135.6" width="90" height="174.4" fill="#4FC3F7" fill-opacity="0.85" rx="2"/>
+        <text x="545" y="128" text-anchor="middle" style="fill:#4FC3F7;font-family:var(--d);font-weight:600;font-size:13px">$43.6</text>
+        <text x="545" y="332" text-anchor="middle" style="fill:var(--ink-mid);font-family:var(--m);font-size:11px">2028</text>
+
+        <rect class="bar-vert d5" x="630" y="105.6" width="90" height="204.4" fill="#4FC3F7" fill-opacity="0.85" rx="2"/>
+        <text x="675" y="98" text-anchor="middle" style="fill:#4FC3F7;font-family:var(--d);font-weight:600;font-size:13px">$51.1</text>
+        <text x="675" y="332" text-anchor="middle" style="fill:var(--ink-mid);font-family:var(--m);font-size:11px">2029</text>
+
+        <rect class="bar-vert d6" x="760" y="70" width="90" height="240" fill="#FFB300" rx="2"/>
+        <text x="805" y="62" text-anchor="middle" style="fill:#FFB300;font-family:var(--d);font-weight:700;font-size:16px">$60B</text>
+        <text x="805" y="332" text-anchor="middle" style="fill:var(--ink-mid);font-family:var(--m);font-size:11px">2030</text>
+        <text x="805" y="348" text-anchor="middle" style="fill:#FFB300;font-family:var(--m);font-size:9.5px;letter-spacing:0.06em">锚点</text>
+
+        <g class="fade-in d3">
+          <path d="M155,200 Q480,140 800,75" fill="none" stroke="#FFB300" stroke-width="1.5" stroke-dasharray="4 4"/>
+          <rect x="380" y="32" width="180" height="28" fill="rgba(255,179,0,0.12)" stroke="rgba(255,179,0,0.4)" rx="3"/>
+          <text x="470" y="51" text-anchor="middle" style="fill:#FFB300;font-family:var(--m);font-weight:600;font-size:12px;letter-spacing:0.06em">CAGR ≈ 17.3% · 5 年翻倍</text>
+        </g>
+      </svg>
+      <div class="chart-legend">
+        <span class="item"><span class="sw" style="background:#1E88E5"></span>2025 起点 ($27B)</span>
+        <span class="item"><span class="sw" style="background:#4FC3F7;opacity:0.85"></span>CAGR 插值估算</span>
+        <span class="item"><span class="sw" style="background:#FFB300"></span>2030 终点 ($60B)</span>
+      </div>
+    </div>
+    <p class="chart-cap">数据来源：Bank of America 预测；2026–2029 为 CAGR 平滑插值，仅作趋势示意</p>
+  </figure>
+
+  <hr>
+
+  <h2>三、价值流向：CPU 复兴的诡异之处</h2>
+
+  <p>讲到这里，逻辑链已经完整：agent 工作流 → CPU 时间占比单调上升 → 并发场景需要大核数 CPU → 数据中心 CPU TAM 翻倍。</p>
+
+  <p>但这一轮 CPU 复兴有一个特别值得注意的反常之处：<strong>增量价值不流向历史的 CPU 双寡头</strong>。</p>
+
+  <h3>价值链的三层塌陷</h3>
+
+  <p>技术史上的典型剧本是这样的：某个品类繁荣，在位者吃掉大部分增量。智能手机抬起了 Apple 和 Samsung，云抬起了 AWS 和 Azure，社交媒体抬起了 Meta。</p>
+
+  <p>但 CPU 这一轮不一样。CPU 品类在涨，但 Intel 和 AMD 在过去五年里被同时从三个方向掏空：</p>
+
+  <div class="mermaid-wrap">
+  <pre class="mermaid">
+flowchart TB
+    Demand[「Agent AI<br/>推动 CPU 需求暴涨」]
+
+    Demand --> V1
+    Demand --> V2
+    Demand --> V3
+
+    subgraph V1["① IP / 设计价值"]
+        direction TB
+        I1[过去: Intel / AMD 设计]
+        I1 --> N1[现在: AWS Graviton<br/>Google Axion<br/>Microsoft Cobalt<br/>Meta 自研 Arm<br/>NVIDIA Grace/Vera]
+    end
+
+    subgraph V2["② 制造价值"]
+        direction TB
+        I2[过去: Intel 自有晶圆厂]
+        I2 --> N2[现在: 全部流向<br/>TSMC]
+    end
+
+    subgraph V3["③ 系统集成价值"]
+        direction TB
+        I3[过去: Dell/HPE/Supermicro<br/>组装]
+        I3 --> N3[现在: 云厂商直接和<br/>鸿海/广达/纬颖合作]
+    end
+
+    Loser[「Intel 失去三层价值<br/>AMD 失去 IP 与系统集成两层」]
+    N1 --> Loser
+    N2 --> Loser
+    N3 --> Loser
+
+    style Demand fill:#D32F2F,color:#fff
+    style I1 fill:#FFE0B2,stroke:#E65100
+    style I2 fill:#FFE0B2,stroke:#E65100
+    style I3 fill:#FFE0B2,stroke:#E65100
+    style N1 fill:#0071C5,color:#fff
+    style N2 fill:#0071C5,color:#fff
+    style N3 fill:#0071C5,color:#fff
+    style Loser fill:#424242,color:#fff
+  </pre>
+  </div>
+
+  <p><strong>第一，超大规模云厂商自己设计芯片</strong>。AWS 有 Graviton（已迭代多代），Google 有 Axion，Microsoft 有 Cobalt，Meta 有自研 Arm。这一层把 IP 价值捕获走了——以前云厂商付钱给 Intel/AMD 买 CPU，现在自己做。<strong>几乎所有新进入者都选了 Arm</strong>——因为 x86 不能被授权，只有 Intel 和 AMD 能造。</p>
+
+  <p><strong>第二，TSMC 拿走了制造利润</strong>。Intel 自己有晶圆厂，但 18A 工艺还在爬产能；超大规模云厂商的自研 CPU 全部在 TSMC 上流片。也就是说，每一颗自研 Arm CPU 卖出去，制造利润流向 TSMC，而不是 Intel 的晶圆厂。</p>
+
+  <p><strong>第三，云厂商自己装数据中心</strong>。系统集成的利润——服务器组装、机架设计、整机销售——这些以前是 Dell、HPE、Supermicro 的活，现在云厂商越来越多地直接和 ODM（鸿海、广达、纬颖）合作，绕过传统 OEM。</p>
+
+  <p><strong>Intel 一次性失去了三层价值捕获，AMD 也同步失去了 IP 设计与系统集成两层</strong>（AMD 一直是 fabless，第二层与它的关系本就有限）。它们拿到的，只剩下「客户兼容性需求 + 双寡头剩余份额」——这是一个会持续被压缩的市场。</p>
+
+  <h3>NVIDIA 是隐形的 CPU 大厂</h3>
+
+  <p>这里还有一个被严重低估的玩家：<strong>NVIDIA 在 2025 年已经成了全球第二大服务器 CPU 厂商（按出货量）</strong>。</p>
+
+  <p>每一台 GB200/GB300 卖出去，都带走一颗 Grace CPU；每一台 Vera Rubin 卖出去，都带走一颗 Vera CPU。2025 年 NVIDIA 出货约 250 万颗 Grace CPU，2026 年 Vera 接力。这些 socket 都是 Intel 和 AMD 永远没有机会竞标的——因为 NVIDIA 把 CPU 与 GPU 通过 NVLink-C2C 集成在同一个系统模块里，作为整机方案捆绑销售。</p>
+
+  <p><strong>这是 NVIDIA 整个 AI 帝国里最隐蔽但最关键的一手棋</strong>：通过把 CPU 也捆进系统，NVIDIA 把自己从「GPU 供应商」升级成了「完整 AI 计算系统供应商」，每一代产品都同时吃掉一个 GPU 利润和一个 CPU socket。</p>
+
+  <h3>这一轮 CPU 红利，最干净的受益方是谁</h3>
+
+  <p>回到产业格局。如果接受「agent 工作流推动 CPU TAM 翻倍」这个逻辑，但同时承认「价值不流向 Intel/AMD」的现实，那么最干净的受益方有三个：</p>
+
+  <p><strong>Arm Holdings</strong>——所有非 x86 服务器 CPU 出货的版税收费亭。AWS Graviton、Google Axion、Microsoft Cobalt、NVIDIA Grace/Vera、Apple Silicon、Ampere——所有这些都基于 Arm 指令集，每出货一颗 Arm 都收一笔授权费。Arm 的商业模式不需要赌任何一家 CPU 厂商赢，只要「Arm 阵营在数据中心新增份额上持续蚕食 x86」就行——而这个趋势在 2025 年已经基本明朗。</p>
+
+  <p><strong>TSMC</strong>——所有人的代工厂。Apple、NVIDIA、AMD、AWS、Google、Microsoft 的所有先进制程 CPU 全部在 TSMC 流片。无论最后谁赢，TSMC 都赢。HPC 业务在 TSMC 收入里的占比已经从 2023 年的 51% 涨到 2026 年的 58%，NVIDIA 已经替代 Apple 成为它最大客户。</p>
+
+  <p><strong>供应链二阶受益方</strong>——HBM（SK Hynix 62% 份额，HBM 业务毛利率约 79%）、CoWoS 封装（月产能从 2025 年底 7.5 万片扩到 2026 年底目标 12-13 万片，仍供不应求）、电源（MPS、Vicor，机架功耗从 H100 时代的 10kW 涨到 Kyber 机架的 600kW）、基板（Ibiden）。这些都是「AI 算力涨多少，它们就跟着涨多少」的环节，确定性比押注单家 CPU 厂商高。</p>
+
+  <p>至于 Intel 和 AMD——它们在 2026-2027 年会吃一波周期性供给红利（CPU 需求增速超过任何一家厂商的扩产速度，5 月那一波股价反应就是市场在为这个逻辑重新定价），但这是周期，不是结构。<strong>阶段性的供需机会和长期的产业格局，要分开看</strong>。</p>
+
+  <hr>
+
+  <h2>结尾</h2>
+
+  <p><strong>GPU 越快，它在 agent 工作流里的时间占比反而越低，瓶颈越往 CPU 这一侧挪</strong>。AI 从「一次问答」进化到「连续行动」之后，瓶颈不再只是 LLM 推理算力本身，还有围绕算力的调度，以及对海量会话的托管——这就是为什么「GPU 只占一成」不是临时现象，而是 GPU 越快就越成立的结构性规律。</p>
+
+  <p>未来一两个季度可以重点观察的指标：</p>
+
+  <ol>
+    <li>超大规模云厂商资本开支里，<strong>CPU 服务器（不含 GPU bundle）的占比</strong>是否在上升；</li>
+    <li>AWS Graviton、Google Axion、Microsoft Cobalt 的<strong>出货量增速</strong>——这是「自研 Arm 替代 x86」逻辑在兑现的最直接证据；</li>
+    <li>NVIDIA Grace/Vera 的出货量与 GPU 出货量的<strong>比例变化</strong>；</li>
+    <li>Arm Holdings 的版税收入结构里，<strong>云数据中心占比</strong>的变化。</li>
+  </ol>
+
+  <p>CPU 这个被 GPU 抢戏三年的品类，现在重新回到 AI 算力的故事中央。但这一次，故事的主角名单不一样了。</p>
+
+  <hr>
+
+  <h2>下集预告</h2>
+
+  <div class="preview-card">
+    <span class="label">下一篇 · EP.02</span>
+    <h3>x86 vs Arm 的最后一战——这从来不是 ISA 之争，是商业模式之争</h3>
+    <p>你以为 Arm 比 x86 省电？Phoronix 实测里 <strong>AMD EPYC 9965 Turin Dense 的 perf/watt 反而压过 AmpereOne</strong>——「Arm 省电」是个被卖给读者三年的神话。Arm 真正赢的不是 ISA，是<strong>商业模式</strong>：Arm 卖 IP（hyperscaler 12 个月自研一颗 CPU），x86 只卖芯片。下一篇拆 1981 年 IBM 留下的「化石」结构、EAG 不是反攻而是 x86 阵营的体面投降，以及 Meta 买 Rivos / NVIDIA 移植 CUDA 到 RISC-V 这「下下一战」的期权。</p>
+  </div>
+
+  <hr>
+
+  <h2>数据来源与说明</h2>
+
+  <div class="footer-note">
+    <ul>
+      <li>GPU 真正在算约占 12%（即非 GPU 时间约 88%）、CPU TAM 270 亿 → 600 亿（Bank of America）、NVIDIA 2025 年 Grace 出货 250 万颗、SK Hynix HBM 份额 62% / 毛利率 79%、CoWoS 月产能数据、HPC 在 TSMC 收入占比从 51% → 58%——均源自 <code>cpu_agentic_ai_takeaways.md</code> 的研究综述。</li>
+      <li>4 月底到 5 月 8 日 5-6 周的 Intel +116% / AMD +124% / NVIDIA 同期相对平淡数据，来源：CNBC 5 月 8 日「Wall Street sees 'changing of the guard in AI'」、24/7 Wall St、TheStreet。Lip-Bu Tan 的「CPU:GPU 1:8 → 1:4 → parity」论断原话出自 Intel 2026 年 4 月 23 日 Q1 财报电话会议。</li>
+      <li><strong>FIG. 01（GPU 占比演变）</strong>：基于「5 轮 LLM 推理 + 5 轮工具调用」的简化模型，GPU 单轮假设 4s→2s→0.8s，非 GPU 部分（工具调用 + 网络 I/O + 等待）保持 6s/轮 不变。趋势示意，绝对值会因模型/网络/工具不同而浮动。</li>
+      <li><strong>FIG. 02（单任务时间分布）</strong>：基于公开 agent benchmark 量级估算的工程估算。比例关系稳定，绝对秒数会浮动。</li>
+      <li><strong>FIG. 03（CPU TAM 增长）</strong>：2025 年 27B 与 2030 年 60B 为 Bank of America 锚点，中间年份按 CAGR ≈ 17% 平滑插值，仅用于趋势示意。</li>
+      <li>第二章对比表里「同时托管的 agent 会话 5000-10000 量级」为基于 I/O 等待比例和 async 调度模型的工程估算，[待核实：可对比 AWS / GCP 在 agent SaaS 实际部署里的并发密度数据]。</li>
+      <li>本文为产业格局分析，文中涉及的公司仅作为分析案例，不代表推荐。</li>
+    </ul>
+  </div>
+
+</article>
+
+<script>
+  if (window.mermaid) {
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'default',
+      flowchart: { useMaxWidth: true, htmlLabels: true, curve: 'basis' },
+      themeVariables: {
+        fontFamily: "'Inter', 'Noto Sans SC', system-ui, sans-serif",
+        fontSize: '14px'
+      }
+    });
+  }
+
+  const figs = document.querySelectorAll('.chart-fig');
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('in-view');
+          io.unobserve(e.target);
+        }
+      });
+    }, { rootMargin: '0px 0px -10% 0px', threshold: 0.15 });
+    figs.forEach(f => io.observe(f));
+  } else {
+    figs.forEach(f => f.classList.add('in-view'));
+  }
+</script>
+
+</body>
+</html>
